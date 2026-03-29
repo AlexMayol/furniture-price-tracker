@@ -1,10 +1,13 @@
-function parsePrice(text) {
+import type { Page } from "playwright";
+import type { Item, ScrapeResult } from "../types";
+
+function parsePrice(text: string): number | null {
   const match = text.match(/([\d.,]+)\s*€/);
   if (!match) return null;
   return parseFloat(match[1].replace(".", "").replace(",", "."));
 }
 
-async function scrape(page, item) {
+export async function scrape(page: Page, item: Item): Promise<ScrapeResult> {
   await page.goto(item.url, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector(".pipcom-price-module__current-price", { timeout: 10000 });
 
@@ -18,18 +21,18 @@ async function scrape(page, item) {
     throw new Error("Could not parse current price");
   }
 
-  let originalPrice = null;
+  let originalPrice: number | null = null;
 
   const addon = await page.$(".pipcom-price-module__addon");
   if (addon) {
     const addonText = await addon.textContent();
-    const prevMatch = addonText.match(/Precio anterior:\s*([\d.,]+)\s*€/);
+    const prevMatch = addonText?.match(/Precio anterior:\s*([\d.,]+)\s*€/);
     if (prevMatch) {
       originalPrice = parseFloat(prevMatch[1].replace(".", "").replace(",", "."));
     }
   }
 
-  let discount = null;
+  let discount: number | null = null;
   if (originalPrice && originalPrice > currentPrice) {
     discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
   }
@@ -43,5 +46,3 @@ async function scrape(page, item) {
     discount_pct: discount || 0,
   };
 }
-
-module.exports = { scrape };

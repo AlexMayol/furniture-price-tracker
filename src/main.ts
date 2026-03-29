@@ -1,26 +1,31 @@
-const fs = require("fs");
-const path = require("path");
-const { scrapeAll } = require("./scraper");
-const { sendEmail } = require("./notifier");
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { scrapeAll } from "./scraper";
+import { sendEmail } from "./notifier";
+import type { Item, PriceEntry, PriceDrop, PriceHistory } from "./types";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DATA_DIR = path.join(__dirname, "..", "data");
 const ITEMS_PATH = path.join(DATA_DIR, "items.json");
 const HISTORY_PATH = path.join(DATA_DIR, "price_history.json");
 
-function loadJson(filePath, fallback) {
+function loadJson<T>(filePath: string, fallback: T): T {
   try {
-    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
   } catch {
     return fallback;
   }
 }
 
-function saveHistory(history) {
+function saveHistory(history: PriceHistory): void {
   fs.writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2) + "\n");
 }
 
-function findDrops(items, scrapedData, history) {
-  const drops = [];
+function findDrops(items: Item[], scrapedData: Record<string, PriceEntry>, history: PriceHistory): PriceDrop[] {
+  const drops: PriceDrop[] = [];
 
   for (const item of items) {
     const scraped = scrapedData[item.id];
@@ -47,7 +52,7 @@ function findDrops(items, scrapedData, history) {
   return drops;
 }
 
-function updateHistory(items, scrapedData, history) {
+function updateHistory(items: Item[], scrapedData: Record<string, PriceEntry>, history: PriceHistory): PriceHistory {
   for (const item of items) {
     const scraped = scrapedData[item.id];
     if (!scraped) continue;
@@ -68,11 +73,11 @@ function updateHistory(items, scrapedData, history) {
   return history;
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log("=== Furniture Price Tracker ===");
   console.log(`Date: ${new Date().toISOString().split("T")[0]}\n`);
 
-  const items = loadJson(ITEMS_PATH, []);
+  const items = loadJson<Item[]>(ITEMS_PATH, []);
   if (items.length === 0) {
     console.log("No items to track. Add items to data/items.json");
     return;
@@ -82,7 +87,7 @@ async function main() {
   const scrapedData = await scrapeAll(items);
   console.log(`\nSuccessfully scraped ${Object.keys(scrapedData).length}/${items.length} items\n`);
 
-  const history = loadJson(HISTORY_PATH, {});
+  const history = loadJson<PriceHistory>(HISTORY_PATH, {});
   const drops = findDrops(items, scrapedData, history);
 
   if (drops.length > 0) {
@@ -101,7 +106,7 @@ async function main() {
   console.log("\nPrice history updated");
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error("Fatal error:", err);
   process.exit(1);
 });

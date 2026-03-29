@@ -2,13 +2,20 @@
   "name": "furniture-price-tracker",
   "version": "2.0.0",
   "description": "Track furniture prices across multiple shops and get notified on price drops",
+  "type": "module",
   "scripts": {
-    "start": "node src/main.js"
+    "typecheck": "tsc",
+    "start": "tsx src/main.ts"
   },
   "author": "AlexMayol",
   "license": "ISC",
   "dependencies": {
     "playwright": "^1.58.2",
     "resend": "^6.9.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   }
 }
