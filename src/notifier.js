@@ -60,7 +60,7 @@ async function sendEmail(drops) {
   try {
     const { data, error } = await resend.emails.send({
       from: "jysk@resend.dev",
-      to: "alexmayolc@gmail.com",
+      to: "amayol@freepik.com",
       subject: `JYSK Price Drop: ${itemSummary}`,
       html,
     });
