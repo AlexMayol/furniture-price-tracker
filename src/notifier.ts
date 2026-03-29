@@ -1,4 +1,7 @@
-function buildEmailHtml(drops) {
+import { Resend } from "resend";
+import type { PriceDrop } from "./types";
+
+function buildEmailHtml(drops: PriceDrop[]): string {
   const rows = drops
     .map(
       (d) => `
@@ -45,14 +48,13 @@ function buildEmailHtml(drops) {
     </div>`;
 }
 
-async function sendEmail(drops) {
+export async function sendEmail(drops: PriceDrop[]): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.error("RESEND_API_KEY is not set, skipping email notification");
     return false;
   }
 
-  const { Resend } = require("resend");
   const resend = new Resend(apiKey);
 
   const html = buildEmailHtml(drops);
@@ -71,12 +73,11 @@ async function sendEmail(drops) {
       return false;
     }
 
-    console.log(`Email sent successfully (id: ${data.id})`);
+    console.log(`Email sent successfully (id: ${data?.id})`);
     return true;
   } catch (err) {
-    console.error(`Failed to send email: ${err.message}`);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Failed to send email: ${message}`);
     return false;
   }
 }
-
-module.exports = { sendEmail };
