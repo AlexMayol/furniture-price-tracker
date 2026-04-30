@@ -27,6 +27,14 @@
       "original_price": null,
       "on_sale": false,
       "discount_pct": 0
+    },
+    {
+      "current_price": 125,
+      "original_price": 199,
+      "on_sale": true,
+      "discount_pct": 37,
+      "date": "2026-04-30",
+      "shop": "jysk"
     }
   ]
 }
