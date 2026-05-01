@@ -1,0 +1,31 @@
+name: Track a new item
+description: Request tracking for a new furniture item.
+title: "Track item: "
+labels: ["add-item"]
+body:
+  - type: input
+    id: item-name
+    attributes:
+      label: Item name
+      description: The display name to use in the tracker.
+      placeholder: "Armario FANDRUP"
+    validations:
+      required: true
+  - type: input
+    id: item-url
+    attributes:
+      label: Item URL
+      description: The product page URL to scrape.
+      placeholder: "https://jysk.es/..."
+    validations:
+      required: true
+  - type: dropdown
+    id: shop
+    attributes:
+      label: Shop
+      description: The shop adapter to use for this item.
+      options:
+        - jysk
+        - ikea
+    validations:
+      required: true

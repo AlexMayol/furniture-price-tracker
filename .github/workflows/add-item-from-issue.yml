@@ -1,0 +1,82 @@
+name: Add Item From Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  add-item:
+    if: contains(github.event.issue.labels.*.name, 'add-item')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm ci
+
+      - name: Add item from issue
+        id: add_item
+        continue-on-error: true
+        run: npx tsx scripts/add-item-from-issue.ts
+
+      - name: Comment on validation failure
+        if: steps.add_item.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "I could not create a PR for this item request. Please check that the issue includes a valid item name, URL, and supported shop."
+
+      - name: Stop after validation failure
+        if: steps.add_item.outcome == 'failure'
+        run: exit 1
+
+      - name: Create item branch
+        env:
+          BRANCH_NAME: add-item-${{ github.event.issue.number }}
+          ITEM_NAME: ${{ steps.add_item.outputs.item_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          git add data/items.json
+          git commit -m "Add tracked item: $ITEM_NAME"
+          git push -u origin "$BRANCH_NAME"
+
+      - name: Create pull request
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ITEM_ID: ${{ steps.add_item.outputs.item_id }}
+          ITEM_NAME: ${{ steps.add_item.outputs.item_name }}
+          ITEM_SHOP: ${{ steps.add_item.outputs.item_shop }}
+        run: |
+          pr_url=$(gh pr create \
+            --title "Add tracked item: $ITEM_NAME" \
+            --body "$(cat <<EOF
+          ## Summary
+          - Add $ITEM_NAME to the tracked furniture items.
+          - Generated item id: \`$ITEM_ID\`
+          - Shop: \`$ITEM_SHOP\`
+
+          Closes #$ISSUE_NUMBER
+          EOF
+          )")
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment with pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PR_URL: ${{ steps.create_pr.outputs.pr_url }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "Created a pull request for this item: $PR_URL"
