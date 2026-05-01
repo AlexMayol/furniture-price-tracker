@@ -1,10 +1,12 @@
 import type { Page } from "playwright";
 
+export type Shop = "jysk" | "ikea";
+
 export interface Item {
   id: string;
   name: string;
   url: string;
-  shop: string;
+  shop: Shop;
 }
 
 export interface ScrapeResult {
@@ -16,14 +18,14 @@ export interface ScrapeResult {
 
 export interface PriceEntry extends ScrapeResult {
   date: string;
-  shop: string;
+  shop: Shop;
 }
 
 export interface PriceDrop {
   id: string;
   name: string;
   url: string;
-  shop: string;
+  shop: Shop;
   current_price: number;
   previous_price: number;
   drop_pct: number;
