@@ -53,6 +53,14 @@
       "discount_pct": 0,
       "date": "2026-05-02",
       "shop": "jysk"
+    },
+    {
+      "current_price": 135,
+      "original_price": 199,
+      "on_sale": true,
+      "discount_pct": 32,
+      "date": "2026-06-11",
+      "shop": "jysk"
     }
   ]
 }
