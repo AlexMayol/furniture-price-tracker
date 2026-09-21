@@ -93,6 +93,14 @@
       "discount_pct": 32,
       "date": "2026-08-20",
       "shop": "jysk"
+    },
+    {
+      "current_price": 199,
+      "original_price": null,
+      "on_sale": false,
+      "discount_pct": 0,
+      "date": "2026-09-21",
+      "shop": "jysk"
     }
   ],
   "altillo-fandrup-blanco": [
